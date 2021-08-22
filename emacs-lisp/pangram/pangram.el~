@@ -1,0 +1,12 @@
+;;; pangram.el --- Pangram (exercism)
+
+;;; Commentary:
+
+;;; Code
+
+
+(seq-filter (lambda (ch) (<= 'a' ch 'z')) (list 'a' 'b' ' '))
+
+
+(provide 'is-pangram)
+;;; pangram.e    l ends      re
