@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 
-# The following comments should help you get started:
-# - Bash is flexible. You may use functions or write a "raw" script.
-#
-# - Complex code can be made easier to read by breaking it up
-#   into functions, however this is sometimes overkill in bash.
-#
-# - You can find links about good style and other resources
-#   for Bash in './README.md'. It came with this exercise.
-#
-#   Example:
-#   # other functions here
-#   # ...
-#   # ...
-#
-#   main () {
-#     # your main function code here
-#   }
-#
-#   # call main with all of the positional arguments
-#   main "$@"
-#
-# *** PLEASE REMOVE THESE COMMENTS BEFORE SUBMITTING YOUR SOLUTION ***
+spaces() {
+  str=""
+  for (( kk = 0; kk < $1; kk++ )); do
+    str="$str"" "
+  done
+}
+
+spacecount=$(( $1 - 1 ))
+results=( 1 )
+for (( i = 0; i < $1; i++ )); do
+   spaces $spacecount
+   spacecount=$(( $spacecount - 1 ))
+   echo "$str"${results[@]}
+   values=( ${results[@]} )
+   sum=0
+   results=()
+   for value in "${values[@]}"; do
+      sum=$(( $sum + $value ))
+      results=( ${results[@]} $sum )
+      sum=$value
+   done
+   results=( ${results[@]} 1 )
+done;
