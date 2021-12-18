@@ -33,17 +33,6 @@
   (major1) == 0 && (major2) == 6 && (minor) <= 2)
 #endif /* MIN_VERSION_containers */
 
-/* package text-1.2.4.0 */
-#ifndef VERSION_text
-#define VERSION_text "1.2.4.0"
-#endif /* VERSION_text */
-#ifndef MIN_VERSION_text
-#define MIN_VERSION_text(major1,major2,minor) (\
-  (major1) <  1 || \
-  (major1) == 1 && (major2) <  2 || \
-  (major1) == 1 && (major2) == 2 && (minor) <= 4)
-#endif /* MIN_VERSION_text */
-
 /* tool gcc-7.2.0 */
 #ifndef TOOL_VERSION_gcc
 #define TOOL_VERSION_gcc "7.2.0"
@@ -133,10 +122,10 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_PACKAGE_KEY
-#define CURRENT_PACKAGE_KEY "poker-1.1.0.2-B3KYIRy0vjPHQbJEPk8Edv"
+#define CURRENT_PACKAGE_KEY "poker-1.1.0.2-1uVvTcFdtmfIkLtM88qNGO"
 #endif /* CURRENT_PACKAGE_KEY */
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "poker-1.1.0.2-B3KYIRy0vjPHQbJEPk8Edv"
+#define CURRENT_COMPONENT_ID "poker-1.1.0.2-1uVvTcFdtmfIkLtM88qNGO"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "1.1.0.2"

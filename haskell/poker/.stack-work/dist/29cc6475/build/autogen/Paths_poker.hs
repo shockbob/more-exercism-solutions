@@ -30,7 +30,7 @@ version = Version [1,1,0,2] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\bin"
-libdir     = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\lib\\x86_64-windows-ghc-8.8.4\\poker-1.1.0.2-B3KYIRy0vjPHQbJEPk8Edv"
+libdir     = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\lib\\x86_64-windows-ghc-8.8.4\\poker-1.1.0.2-1uVvTcFdtmfIkLtM88qNGO"
 dynlibdir  = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\lib\\x86_64-windows-ghc-8.8.4"
 datadir    = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\share\\x86_64-windows-ghc-8.8.4\\poker-1.1.0.2"
 libexecdir = "C:\\Users\\shock\\Exercism\\haskell\\poker\\.stack-work\\install\\a6cba4d7\\libexec\\x86_64-windows-ghc-8.8.4\\poker-1.1.0.2"
