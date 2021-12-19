@@ -3,22 +3,37 @@
             [reversi.extra :refer :all]
             [reversi.core :refer :all]))
 
+(def test-grid-corner (make-grid [[0 0 black]]))
+
+
+(def get-value-test-1
+     (is (> (get-value [1 1] test-grid-corner)(get-value [1 1] start-grid))))
+
+(def max-by-test-2
+  (testing "max-by works for sum"
+    (is (= [10 2] (max-by (partial reduce +) [[10 2] [1 2 3] [] [1 1]])))))
+
+(def max-by-test-1
+  (testing "max-by works for count"
+    (is (= [1 2 3] (max-by count [[1 2] [1 2 3] [] [1 1]])))))
+
 (deftest quick-test
   (testing "dirs size is 8"
     (is (= 8 (count dirs)))))
 
-(deftest play-game-1
-    (testing "play games works" 
-       (is (= (play-game start-grid [] first first) []))))
+;(deftest play-game-1
+;  (testing "play games works"
+;    (is (= (play-game start-grid [] first first) []))))
 (deftest scores-1
   (testing "scores returns correct result"
     (is (= {blank 60 white 2 black 2} (scores start-grid)))))
 
-(def next-grid (make-grid [[3 3 black][4 4 black] [4 3 white][3 4 black][2 4 black]]))
+(def next-grid (make-grid [[3 3 black] [4 4 black] [4 3 white] [3 4 black] [2 4 black]]))
 (println next-grid)
+(defn fst [mvs grd] (first mvs))
 (deftest play-next-move-1
- (testing "play-next-move works:Îy"
-    (is  (= (play-next-move start-grid black first) next-grid))))
+  (testing "play-next-move works:Îy"
+    (is  (= (play-next-move start-grid black fst) next-grid))))
 
 (deftest get-all-moves-1
   (testing "get-all-moves works"

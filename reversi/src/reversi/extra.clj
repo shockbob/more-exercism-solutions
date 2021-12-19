@@ -84,39 +84,44 @@
   (frequencies (flatten grid)))
 
 (defn play-next-move [grid color chooser]
-  (let [all-moves (get-all-moves grid color)
-        best-move (chooser all-moves)
+  (let [all-moves (shuffle (get-all-moves grid color))
+        best-move (chooser all-moves grid)
         grid (if (empty? all-moves) grid (make-move grid best-move color))]
-    grid ))
+    grid))
 
 (defn play-game [grid grids black-chooser white-chooser]
   (let [black-grid (play-next-move grid black black-chooser)
         white-grid (play-next-move black-grid  white white-chooser)]
     (if (= white-grid grid)
-        grids
-        (play-game white-grid (conj grids black-grid white-grid) black-chooser white-chooser))))
+      grids
+      (play-game white-grid (conj grids black-grid white-grid) black-chooser white-chooser))))
 
 (def value-grid-x [[:corner :corner-adj :side :side :side :side :corner-adj :corner]
-     [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
-     [:side :side-adj :center :center :center :center :side-adj :side]
-     [:side :side-adj :center :center :center :center :side-adj :side]
-     [:side :side-adj :center :center :center :center :side-adj :side]
-     [:side :side-adj :center :center :center :center :side-adj :side]
-     [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
-     [:corner :corner-adj :side :side :side :side :corner-adj :corner]])
+                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
+                   [:corner :corner-adj :side :side :side :side :corner-adj :corner]])
 
 (def value-map {:corner 40 :corner-adj 1 :center 10 :side 20 :side-adj 1})
 
-(defn max-by [keyfn [f & r]] 
-   (reduce 
-     (fn [mx e] (if (> (keyfn e) (keyfn mx)) e mx)) 
-     f 
-     r))
+(defn max-by [keyfn [f & r]]
+  (first
+   (reduce
+    (fn [[max-e max-fe] e]
+      (let [fe (keyfn e)]
+        (if (> fe max-fe)
+          [e fe]
+          [max-e max-fe])))
+    [f (keyfn f)]
+    r)))
 
-(def corners {[0 1] [0 0], [1 0][0 0], [1 1][0 0],
-              [6 7] [7 7], [7 6][7 7], [6 6][7 7],
-              [0 6] [0 7], [1 6][0 7], [1 7][0 7],
-              [6 0] [7 0], [6 1][7 0], [7 1][7 0]})
+(def corners {[0 1] [0 0], [1 0] [0 0], [1 1] [0 0],
+              [6 7] [7 7], [7 6] [7 7], [6 6] [7 7],
+              [0 6] [0 7], [1 6] [0 7], [1 7] [0 7],
+              [6 0] [7 0], [6 1] [7 0], [7 1] [7 0]})
 
 (defn value-calculate [mv]
   (value-map (get-in value-grid-x mv)))
@@ -124,29 +129,38 @@
 (defn value-move [[mv flips]]
   (reduce + (map value-calculate (conj flips mv))))
 
-(defn value-chooser-2 [moves]
+(defn value-chooser-2 [moves grid]
   (max-by value-move moves))
 
-;(defn get-value [mv grid]
-;  (let [corner-value (corners mv)
-;        real-value (if (nil? corner-value (get-in value-grid-x mv)) 
-;  (get-in value-grid-x mv)) 
+(defn get-value [mv grid]
+  (let [corner-value (corners mv)]
+    (if (or (nil? corner-value)(= blank (get-in grid corner-value)))
+      (value-calculate mv)
+      (value-map :corner))))
 
-(defn value-chooser [moves]
+(defn value-chooser [moves grid]
   (max-by (fn [[mv flips]] (value-calculate mv)) moves))
 
-(defn size-chooser [moves]
+(defn value-chooser-enh [moves grid]
+  (max-by (fn [[mv flips]] (get-value mv grid)) moves))
+
+(defn size-chooser [moves grid]
   (max-by (fn [[mv flips]] (count flips)) moves))
 
-(defn printable [grid] 
-      (apply str (interpose "\r\n" 
-                            (map (partial apply str) grid))))
+(defn printable [grid]
+  (apply str (interpose "\r\n"
+                        (map (partial apply str) grid))))
 
-(defn rand-xth [c] (if (empty? c) nil (rand-nth c)))
+(defn rand-xth [c grid] (if (empty? c) nil (rand-nth c)))
 
-(defn printablegrids [grid] (interpose "\r\n\r\n" (map printable grid)))
-(def grids (play-game start-grid [] value-chooser rand-xth))
-(def last-grid (last grids))
-(println (printable last-grid))
-(println (scores last-grid))
+(defn printable-grids [grid] (interpose "\r\n\r\n" (map printable grid)))
+(def games (take 1000 (repeatedly #(play-game start-grid [] value-chooser-enh value-chooser))))
+;(def grids (play-game start-grid [] size-chooser value-chooser-enh))
+;(println (printable-grids grids))
+(def all-scores (map scores (map last games)))
+(def result (reduce (fn [res score] (if (> (score black 0) (score white 0))
+                          (assoc res black (inc (res black 0)))
+                          (assoc res white (inc (res white 0))))) {} all-scores))
+
+(println result) 
 

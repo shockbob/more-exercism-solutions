@@ -87,11 +87,10 @@
   (let [all-moves (get-all-moves grid color)
         best-move (chooser all-moves)
         grid (if (empty? all-moves) grid (make-move grid best-move color))]
-    grid ))
+    grid))
 
-(defn printable [grid] 
-      (apply str (interpose "\r\n" 
-                            (map (partial apply str) grid))))
-
+(defn printable [grid]
+  (apply str (interpose "\r\n"
+                        (map (partial apply str) grid))))
 
 (println (printable start-grid))
