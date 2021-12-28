@@ -51,8 +51,8 @@
 ;        valid-coords (filter in-range-coord? coords)]
 ;    valid-coords))
 ;
-;(defn count-stables [colors color]
-;  (count (take-while (partial = color) colors)))
+(defn count-stables [colors color]
+  (count (take-while (partial = color) colors)))
 ;
 ;(def corners
 ;  {{:row 0 :col 0} {:port {:dr 0 :dc 1} :forward {:dr 1 :dc 0}}
