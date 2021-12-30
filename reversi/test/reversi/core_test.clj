@@ -2,7 +2,13 @@
   (:require [clojure.test :refer :all]
             [reversi.extra :refer :all]
             [reversi.core :refer :all]))
+(def test-stable-grid (make-grid [[0 0 white][0 1 white] [0 2 white]
+                                  [1 0 white][1 1 white]]))
 
+(deftest test-stable-chunk-1
+  (testing
+    (is (= [{:row 0 :col 0} {:row 0 :col 1} {:row 0 :col 2}]
+           (stable-chunk test-stable-grid {:row 0 :col 0} {:dr 0 :dc 1} white 8)))))
 (deftest make-diffs-1
   (testing "make-diffs works"
     (is (= [{:dr 1 :dc 1} {:dr 2 :dc 2} {:dr 3 :dc 3} {:dr 4 :dc 4} {:dr 5 :dc 5} {:dr 6 :dc 6} {:dr 7 :dc 7} {:dr 8 :dc 8}] (make-diffs {:dr 1 :dc 1})))))
@@ -34,19 +40,16 @@
 (def test-find-stables-grid
   (make-grid [[0 0 black] [1 1 black] [0 1 black] [0 2 black] [1 0 black]]))
 
-;(deftest find-stables-test-1
-;  (testing "find-stables works for simple case"
-;    (is (= #{{ :row 0 :col 0} { :row 0 :col 1} { :row 0 :col 2} { :row 1 :col 0} { :row 1 :col 1}} (find-stables test-find-stables-grid black)))))
 
 (def test-grid-corner (make-grid [[0 0 black]]))
 
-;(def get-value-test-1
-;  (testing "get-value different for corner exists vs not"
-;    (is (> (get-value { :row 1 :col 1} test-grid-corner) (get-value { :row 1 :col 1} start-grid)))))
+(def get-value-test-1
+  (testing "get-value different for corner exists vs not"
+    (is (> (get-value test-grid-corner { :row 1 :col 1} ) (get-value start-grid { :row 1 :col 1})))))
 
 (def max-by-test-3
   (testing "max-by works for empty coll"
-    (is (= nil (max-by (partial reduce +) [] )))))
+    (is (= nil (max-by (partial reduce +) [])))))
 
 (def max-by-test-2
   (testing "max-by works for sum"
@@ -66,19 +69,18 @@
 (deftest scores-1
   (testing "scores returns correct result"
     (is (= {white 2 black 2} (scores start-grid)))))
-(def next-grid (make-grid [[3 3 black] [4 4 black] [4 3 white] [3 4 black] [2 4 black]]))
-;(println next-grid)
+(def next-grid  {{:row 3, :col 3} \B, {:row 4, :col 4} \B, {:row 3, :col 4} \B, {:row 4, :col 3} \W, {:row 2, :col 4} \B})
 (defn fst [mvs grd] (first mvs))
-;(deftest play-next-move-1
-;  (testing "play-next-move works"
-;    (is  (= (play-next-move start-grid black fst) next-grid))))
+(deftest play-next-move-1
+  (testing "play-next-move works"
+    (is  (= (play-next-move start-grid black fst) next-grid))))
 
 (deftest get-all-moves-1
   (testing "get-all-moves works"
-    (is (= (set (get-all-moves start-grid white))  
-           #{[{ :row 2 :col 3} [{ :row 3 :col 3}]] 
-             [{ :row 3 :col 2} [{ :row 3 :col 3}]] 
-             [{ :row 4 :col 5} [{ :row 4 :col 4}]] 
+    (is (= (set (get-all-moves start-grid white))
+           #{[{ :row 2 :col 3} [{ :row 3 :col 3}]]
+             [{ :row 3 :col 2} [{ :row 3 :col 3}]]
+             [{ :row 4 :col 5} [{ :row 4 :col 4}]]
              [{ :row 5 :col 4} [{ :row 4 :col 4}]]}))))
 
 (def count-flips-1
@@ -108,14 +110,14 @@
 (def new-grid (make-move start-grid [{ :row 2 :col 3} [{ :row 3 :col 3}]] white))
 (deftest get-all-moves-2
   (testing "get-all-moves works against other case"
-    (is (= (set (get-all-moves new-grid black)) 
-           #{[{ :row 2 :col 2} [{ :row 3 :col 3}]] 
-             [{ :row 2 :col 4} [{ :row 3 :col 4}]] 
+    (is (= (set (get-all-moves new-grid black))
+           #{[{ :row 2 :col 2} [{ :row 3 :col 3}]]
+             [{ :row 2 :col 4} [{ :row 3 :col 4}]]
              [{ :row 4 :col 2} [{ :row 4 :col 3}]]}))))
-(def move-start {                         {:row 0 :col 1} white 
+(def move-start {                         {:row 0 :col 1} white
                  {:row 1 :col 0} white {:row 1 :col 1} white})
 
-(def move-end {{:row 0 :col 0} black {:row 0 :col 1} black 
+(def move-end {{:row 0 :col 0} black {:row 0 :col 1} black
                {:row 1 :col 0} black {:row 1 :col 1} black})
 (deftest make-move-1
   (testing "make-move returns correct results"

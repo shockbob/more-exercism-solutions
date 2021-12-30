@@ -7,14 +7,25 @@
 (defn get-dirs [] dirs)
 (def blank-grid {})
 (def opposite {white black black white})
+(def value-grid-x [[:corner :corner-adj :side :side :side :side :corner-adj :corner]
+                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:side :side-adj :center :center :center :center :side-adj :side]
+                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
+                   [:corner :corner-adj :side :side :side :side :corner-adj :corner]])
 
-(defn vec-grid [grid] 
-  (vec 
-    (map 
-      vec 
-      (partition 8 
-                 (for [row (range 8) col (range 8)] 
-                   (grid {:row row :col col} \- ))))))
+(def value-map {:corner 40 :corner-adj 1 :center 10 :side 20 :side-adj 1})
+
+
+(defn vec-grid [grid]
+  (vec
+    (map
+      vec
+      (partition 8
+                 (for [row (range 8) col (range 8)]
+                   (grid {:row row :col col} \-))))))
 
 (defn printable [grid]
   (apply str (interpose "\r\n"
@@ -45,32 +56,47 @@
          valid-coords (filter in-range-coord? coords)]
      valid-coords)))
 
-;(defn get-solid-checks [coord right-dir up-diffs]
-;  (let [coords (get-valid-coords-in-dir coord right-dir 0)
-;        coords (make-coords coord up-diffs)
-;        valid-coords (filter in-range-coord? coords)]
-;    valid-coords))
-;
 (defn count-stables [colors color]
   (count (take-while (partial = color) colors)))
-;
-;(def corners
-;  {{:row 0 :col 0} {:port {:dr 0 :dc 1} :forward {:dr 1 :dc 0}}
-;   {:row 0 :col 7} {:port {:dr 1 :dc 0} :forward {:dr 0 :dc -1}}
-;   {:row 7 :col 0} {:port {:dr 0 :dc 1} :forward {:dr -1 :dc 0}}
-;   {:row 7 :col 7} {:port {:dr 0 :dc -1} :forward {:dr -1 :dc 0}}})
-;
-;(defn solid-colors [grid color coord dir]
-;  (let [valid-coords (get-valid-coords-in-dir coord dir)
-;        colors (map (partial get-in grid) valid-coords)
-;        stable-size (count-stables colors color)
-;        stables (take stable-size valid-coords)]
-;    stables))
-;
-;
+
+(def corners
+  {{:row 0 :col 0} {:port {:dr 0 :dc 1} :forward {:dr 1 :dc 0}}
+   {:row 0 :col 7} {:port {:dr 1 :dc 0} :forward {:dr 0 :dc -1}}
+   {:row 7 :col 0} {:port {:dr 0 :dc 1} :forward {:dr -1 :dc 0}}
+   {:row 7 :col 7} {:port {:dr 0 :dc -1} :forward {:dr -1 :dc 0}}})
+
+(defn stable-chunk [grid coord forward-dir color max-size]
+  (let [forward-coords (get-valid-coords-in-dir coord forward-dir 0)
+        colors (map grid forward-coords)
+        stable-size (count-stables colors color)]
+    (take (min stable-size max-size) forward-coords)))
+
+(defn stable-section
+  ([grid forward-dir edge-coords color]
+   (stable-section grid forward-dir edge-coords color 8 []))
+  ([grid forward-dir [f & r] color mx coll]
+   (if (or (nil? f)(zero? mx))
+       coll
+       (let [chunk (stable-chunk grid f forward-dir color mx)
+             mx (dec (count chunk))]
+         (recur grid forward-dir r color mx (concat coll chunk))))))
+
+
+
+(defn stables [grid corner-coord color]
+  (let [port-dir (get-in corners [corner-coord :port])
+        forward-dir (get-in corners [corner-coord :forward])
+        valid-edges (get-valid-coords-in-dir corner-coord port-dir 0)
+        stables (stable-section grid forward-dir valid-edges color)]
+    stables))
+
+(defn stables-on-grid [grid color]
+  (mapcat (fn [corner-coord] (stables grid corner-coord color))
+     (keys corners)))
+     
 (defn neighbors [coord]
   (filter in-range-coord?
-         (make-coords coord (get-dirs)))) 
+         (make-coords coord (get-dirs))))
 
 (defn make-grid [grid-data]
   (reduce
@@ -90,8 +116,10 @@
           (neighbors coord)))
 
 (defn find-color [grid color]
-  (filter (fn [coord] (= color (grid coord)))
-          all-coords))
+  (map first
+       (filter
+         (fn [[k v]] (= v color))
+         grid)))
 
 (defn countem [[f & r] color total]
   (cond
@@ -135,46 +163,33 @@
   (frequencies (vals grid)))
 
 (defn play-next-move [grid color chooser]
-  (let [all-moves (shuffle (get-all-moves grid color))
+  (let [all-moves (get-all-moves grid color)
         best-move (chooser all-moves grid)
         grid (if (empty? all-moves) grid (make-move grid best-move color))]
     grid))
 
-(def value-grid-x [[:corner :corner-adj :side :side :side :side :corner-adj :corner]
-                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
-                   [:side :side-adj :center :center :center :center :side-adj :side]
-                   [:side :side-adj :center :center :center :center :side-adj :side]
-                   [:side :side-adj :center :center :center :center :side-adj :side]
-                   [:side :side-adj :center :center :center :center :side-adj :side]
-                   [:corner-adj :corner-adj :side-adj :side-adj :side-adj :side-adj :corner-adj :corner-adj]
-                   [:corner :corner-adj :side :side :side :side :corner-adj :corner]])
-
-(def value-map {:corner 40 :corner-adj 1 :center 10 :side 20 :side-adj 1})
-
 (defn max-by [keyfn [f & r]]
   (if (nil? f)
     nil
-  (first
-   (reduce
-    (fn [[max-e max-fe] e]
-      (let [fe (keyfn e)]
-        (if (> fe max-fe)
-          [e fe]
-          [max-e max-fe])))
-    [f (keyfn f)]
-    r))))
+   (first
+    (reduce
+     (fn [[max-e max-fe] e]
+       (let [fe (keyfn e)]
+         (if (> fe max-fe)
+           [e fe]
+           [max-e max-fe])))
+     [f (keyfn f)]
+     r))))
 
-(def corners-map-raw
-  {[0 1] [0 0], [1 0] [0 0], [1 1] [0 0],
-   [6 7] [7 7], [7 6] [7 7], [6 6] [7 7],
-   [0 6] [0 7], [1 6] [0 7], [1 7] [0 7],
-   [6 0] [7 0], [6 1] [7 0], [7 1] [7 0]})
-
-(def corners-map (reduce 
-                   (fn [m [[kr kc] [vr vc]]] 
-                     (assoc m {:row kr :col kc} {:row vr :col vc})) 
-                   {} 
-                   corners-map-raw) )
+(def upper-left  {:row 0 :col 0})
+(def upper-right {:row 0 :col 7})
+(def lower-right {:row 7 :col 7})
+(def lower-left  {:row 7 :col 0})
+(def corners-map
+  {{ :row 0 :col 1 } upper-left, { :row 1 :col 0 } upper-left, { :row 1 :col 1 } upper-left,
+   { :row 6 :col 7 } lower-right, { :row 7 :col 6 } lower-right, { :row 6 :col 6 } lower-right,
+   { :row 0 :col 6 } upper-right, { :row 1 :col 6 } upper-right, { :row 1 :col 7 } upper-right,
+   { :row 6 :col 0 } lower-left, { :row 6 :col 1 } lower-left, { :row 7 :col 1 } lower-left})
 
 (defn value-calculate [mv]
   (value-map (get-in value-grid-x [(mv :row)(mv :col)])))
@@ -209,6 +224,8 @@
                      (assoc res white (inc (res white 0)))))
    {}
    all-scores))
+
+(defn addem [a b] (+ a b))
 
 (defn play-game [grid grids black-chooser white-chooser]
   (let [black-grid (play-next-move grid black black-chooser)
